@@ -13,6 +13,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	color "github.com/fatih/color"
 )
 
 type DNSLookup struct {
@@ -46,7 +48,7 @@ func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
 }
 
 type CloudServices struct {
-	CloudServices []CloudService
+	Services []CloudService
 }
 
 type CloudService struct {
@@ -55,7 +57,7 @@ type CloudService struct {
 }
 
 func (c *CloudServices) IsCloud(ip string) bool {
-	for _, service := range c.CloudServices {
+	for _, service := range c.Services {
 		for _, rangeIP := range service.IPRange {
 			if rangeIP == ip {
 				return true
@@ -66,30 +68,31 @@ func (c *CloudServices) IsCloud(ip string) bool {
 }
 
 func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
+
 	// Read the Cloud Services IP Ranges
 	localFile := "ip-ranges.json"
 
 	file, err := os.Open(localFile)
 	if err != nil {
-		return CloudServices{}, err
+		panic(err)
 	}
 	defer file.Close()
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		return CloudServices{}, err
+		panic(err)
 	}
 
-	err = json.Unmarshal(data, &c.CloudServices)
+	err = json.Unmarshal(data, c)
 	if err != nil {
-		return CloudServices{}, err
+		panic(err)
 	}
 
 	return *c, nil
 }
 
 func (c *CloudServices) IsCloudIP(ip net.IP) (bool, string, error) {
-	for _, service := range c.CloudServices {
+	for _, service := range c.Services {
 		for _, rangeIP := range service.IPRange {
 			_, ipRange, _ := net.ParseCIDR(rangeIP)
 			if ipRange.Contains(ip) {
@@ -158,13 +161,13 @@ func (c *CloudServices) UpdateCloudServices() {
 				for _, prefix := range aws.Prefixes {
 					ipv4 = append(ipv4, prefix.IPPrefix)
 				}
-				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ipv4})
+				c.Services = append(c.Services, CloudService{Name: name, IPRange: ipv4})
 
 				var ipv6 []string
 				for _, prefix := range aws.Ipv6Prefixes {
 					ipv6 = append(ipv6, prefix.IPPrefix)
 				}
-				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ipv6})
+				c.Services = append(c.Services, CloudService{Name: name, IPRange: ipv6})
 
 			case "Cloudflare":
 			case "Cloudflare6":
@@ -174,7 +177,7 @@ func (c *CloudServices) UpdateCloudServices() {
 				for scanner.Scan() {
 					ips = append(ips, scanner.Text())
 				}
-				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ips})
+				c.Services = append(c.Services, CloudService{Name: name, IPRange: ips})
 			case "Azure":
 
 				type AzureIPRanges struct {
@@ -196,7 +199,7 @@ func (c *CloudServices) UpdateCloudServices() {
 				}
 
 				for _, prefix := range azure.Values {
-					c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: prefix.Properties.AddressPrefixes})
+					c.Services = append(c.Services, CloudService{Name: name, IPRange: prefix.Properties.AddressPrefixes})
 				}
 			}
 		}(name, url)
@@ -213,8 +216,6 @@ func (c *CloudServices) UpdateCloudServices() {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("%+v\n", c.CloudServices)
 
 }
 
@@ -237,6 +238,9 @@ func main() {
 		cloud.ReadCloudServices()
 	}
 
+	green := color.New(color.FgGreen, color.Bold)
+	red := color.New(color.FgRed, color.Bold)
+
 	// Read the nameservers from the file
 	nameserverFile, err := os.Open(args.NSFile)
 	if err != nil {
@@ -257,35 +261,42 @@ func main() {
 		panic(err)
 	}
 
+	var wg sync.WaitGroup
 	dfScanner := bufio.NewScanner(domainFile)
 	dfScanner.Split(bufio.ScanLines)
 	for dfScanner.Scan() {
-		d := DNSLookup{}
-		d.DomainName = dfScanner.Text()
-		d.Nameserver = nameservers[rand.Intn(len(nameservers))]
+		wg.Add(1)
+		go func(domain string) {
+			defer wg.Done()
 
-		res, err := d.DoLookup()
+			d := DNSLookup{}
+			d.DomainName = domain
+			d.Nameserver = nameservers[rand.Intn(len(nameservers))]
 
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Printf("%+v\n", res)
-			for _, ip := range res.IPAddrs {
+			res, err := d.DoLookup()
 
-				fmt.Println("Checking IP: " + ip)
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				for _, ip := range res.IPAddrs {
 
-				isCloud, service, err := cloud.IsCloudIP(net.ParseIP(ip))
+					isCloud, service, err := cloud.IsCloudIP(net.ParseIP(ip))
 
-				if err != nil {
-					fmt.Println(err)
-				} else {
-					fmt.Printf("Is Cloud: %v Service: %v IP: %v\n", isCloud, service, res)
+					if err != nil {
+						fmt.Println(err)
+					} else {
+						if isCloud {
+							green.Printf("[+] Is Cloud Service: %t | Service: %s | IP: %s\n", isCloud, service, ip)
+						} else {
+							red.Printf("[-] Is Cloud Service: %t | IP: %s\n", isCloud, ip)
+						}
+					}
 				}
 			}
+		}(dfScanner.Text())
 
-		}
+		wg.Wait()
 	}
 
 	domainFile.Close()
-
 }
