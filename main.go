@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -24,12 +23,24 @@ type DNSLookup struct {
 	IPAddrs    []string
 }
 
+type CloudServices struct {
+	Services []CloudService
+}
+
+type CloudService struct {
+	Name    string
+	IPRange []string
+}
 type ProgArgs struct {
 	DomainFile          string
 	NSFile              string
 	OutputFile          string
 	UpdateCloudServices bool
+	Threads             int
 }
+
+var cloud CloudServices
+var nameservers []string
 
 func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
 	r := &net.Resolver{
@@ -46,15 +57,6 @@ func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
 	dns.IPAddrs, err = r.LookupHost(context.Background(), dns.DomainName)
 
 	return dns, err
-}
-
-type CloudServices struct {
-	Services []CloudService
-}
-
-type CloudService struct {
-	Name    string
-	IPRange []string
 }
 
 func (c *CloudServices) IsCloud(ip string) bool {
@@ -220,6 +222,40 @@ func (c *CloudServices) UpdateCloudServices() {
 
 }
 
+func processQueue(queue chan string, wg *sync.WaitGroup) {
+
+	defer wg.Done()
+
+	green := color.New(color.FgGreen, color.Bold)
+	red := color.New(color.FgRed, color.Bold)
+
+	var dns DNSLookup
+	for domain := range queue {
+		dns.DomainName = domain
+		dns.Nameserver = nameservers[rand.Intn(len(nameservers))]
+		res, err := dns.DoLookup()
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		for _, ip := range res.IPAddrs {
+
+			isCloud, service, err := cloud.IsCloudIP(net.ParseIP(ip))
+
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				if isCloud {
+					green.Printf("[+] Is Cloud Service: %t | Service: %s | IP: %s | Domain: %s\n", isCloud, service, ip, domain)
+				} else {
+					red.Printf("[-] Is Cloud Service: %t | IP: %s | Domain: %s\n", isCloud, ip, domain)
+				}
+			}
+		}
+	}
+}
+
 func main() {
 
 	args := ProgArgs{}
@@ -228,10 +264,9 @@ func main() {
 	flag.StringVar(&args.DomainFile, "df", "", "File containing domains to lookup")
 	flag.StringVar(&args.NSFile, "nf", "nameservers.txt", "File containing nameservers to use for lookup")
 	flag.StringVar(&args.OutputFile, "o", "", "Output File (JSON)")
+	flag.IntVar(&args.Threads, "t", 10, "Number of threads to use")
 	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges")
 	flag.Parse()
-
-	cloud := CloudServices{}
 
 	if args.UpdateCloudServices {
 		cloud.UpdateCloudServices()
@@ -239,8 +274,8 @@ func main() {
 
 	cloud.ReadCloudServices()
 
-	green := color.New(color.FgGreen, color.Bold)
-	red := color.New(color.FgRed, color.Bold)
+	var wg sync.WaitGroup
+	queueChan := make(chan string, 100)
 
 	// Read the nameservers from the file
 	nameserverFile, err := os.Open(args.NSFile)
@@ -250,11 +285,15 @@ func main() {
 
 	nsScanner := bufio.NewScanner(nameserverFile)
 	nsScanner.Split(bufio.ScanLines)
-	var nameservers []string
 	for nsScanner.Scan() {
 		nameservers = append(nameservers, nsScanner.Text())
 	}
 	nameserverFile.Close()
+
+	for i := 0; i < args.Threads; i++ {
+		wg.Add(1)
+		go processQueue(queueChan, &wg)
+	}
 
 	// Read the domain names from the file
 	domainFile, err := os.Open(args.DomainFile)
@@ -262,42 +301,16 @@ func main() {
 		panic(err)
 	}
 
-	var wg sync.WaitGroup
 	dfScanner := bufio.NewScanner(domainFile)
 	dfScanner.Split(bufio.ScanLines)
+
 	for dfScanner.Scan() {
-		wg.Add(1)
-		go func(domain string) {
-			defer wg.Done()
-
-			d := DNSLookup{}
-			d.DomainName = strings.TrimSpace(domain)
-			d.Nameserver = nameservers[rand.Intn(len(nameservers))]
-
-			res, err := d.DoLookup()
-
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				for _, ip := range res.IPAddrs {
-
-					isCloud, service, err := cloud.IsCloudIP(net.ParseIP(ip))
-
-					if err != nil {
-						fmt.Println(err)
-					} else {
-						if isCloud {
-							green.Printf("[+] Is Cloud Service: %t | Service: %s | IP: %s | Domain: %s\n", isCloud, service, ip, domain)
-						} else {
-							red.Printf("[-] Is Cloud Service: %t | IP: %s | Domain: %s\n", isCloud, ip, domain)
-						}
-					}
-				}
-			}
-		}(dfScanner.Text())
-
-		wg.Wait()
+		queueChan <- dfScanner.Text()
 	}
 
 	domainFile.Close()
+
+	close(queueChan)
+
+	wg.Wait()
 }
