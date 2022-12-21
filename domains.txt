@@ -1,1 +1,11 @@
-rootshellsecurity.net
+Google.com
+Youtube.com
+Facebook.com
+Baidu.com
+Wikipedia.org
+Qq.com
+Taobao.com
+Tmall.com
+Yahoo.com
+Amazon.com
+aws.amazon.com

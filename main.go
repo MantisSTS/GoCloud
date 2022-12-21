@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -270,7 +271,7 @@ func main() {
 			defer wg.Done()
 
 			d := DNSLookup{}
-			d.DomainName = domain
+			d.DomainName = strings.TrimSpace(domain)
 			d.Nameserver = nameservers[rand.Intn(len(nameservers))]
 
 			res, err := d.DoLookup()
