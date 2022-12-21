@@ -31,3 +31,5 @@ Put all the domains into a file (`domains.txt` for example) and run the program:
 ```
 GoCloud -df domains.txt 
 ```
+
+![image](https://user-images.githubusercontent.com/818959/208897747-1be861b4-e2b0-4949-a1ff-72eea56ea965.png)
