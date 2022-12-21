@@ -286,9 +286,9 @@ func main() {
 						fmt.Println(err)
 					} else {
 						if isCloud {
-							green.Printf("[+] Is Cloud Service: %t | Service: %s | IP: %s\n", isCloud, service, ip)
+							green.Printf("[+] Is Cloud Service: %t | Service: %s | IP: %s | Domain: %s\n", isCloud, service, ip, domain)
 						} else {
-							red.Printf("[-] Is Cloud Service: %t | IP: %s\n", isCloud, ip)
+							red.Printf("[-] Is Cloud Service: %t | IP: %s | Domain: %s\n", isCloud, ip, domain)
 						}
 					}
 				}
