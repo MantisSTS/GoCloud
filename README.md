@@ -11,8 +11,17 @@ go build .
 ./GoCloud -df domains.txt
 ```
 
-## Usage
+## Supported Cloud Services
 
+The following Cloud Services are currently supported:
+
+- Google Cloud
+- Cloudflare
+- Amazon Web Services (AWS)
+- Microsoft Azure
+
+
+## Usage
 
 **Nameservers**
 
@@ -24,7 +33,7 @@ You can specify a set of nameservers `nameservers.txt` to use which may be usefu
 Run the program with the `-update` flag to download the latest IP ranges. This isn't done every time to save time on each run.
 
 ```
-GoCloud -update -df domains.txt
+./GoCloud -update -df domains.txt
 ```
 
 **Usage**
@@ -32,8 +41,17 @@ GoCloud -update -df domains.txt
 Put all the domains into a file (`domains.txt` for example) and run the program:
 
 ```
-GoCloud -df domains.txt 
+./GoCloud -df domains.txt 
 ```
+
+**Output to File**
+
+GoCloud will output the results to a JSON file when using the `-o` flag:
+
+```
+./GoCloud -df domains.txt -nf nameservers.txt -o results.json
+```
+
 
 ![image](https://user-images.githubusercontent.com/818959/208897747-1be861b4-e2b0-4949-a1ff-72eea56ea965.png)
 

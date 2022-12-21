@@ -365,7 +365,6 @@ func main() {
 
 	dfScanner := bufio.NewScanner(domainFile)
 	dfScanner.Split(bufio.ScanLines)
-
 	for dfScanner.Scan() {
 		queueChan <- dfScanner.Text()
 	}
