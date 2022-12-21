@@ -235,9 +235,9 @@ func main() {
 
 	if args.UpdateCloudServices {
 		cloud.UpdateCloudServices()
-	} else {
-		cloud.ReadCloudServices()
 	}
+
+	cloud.ReadCloudServices()
 
 	green := color.New(color.FgGreen, color.Bold)
 	red := color.New(color.FgRed, color.Bold)
