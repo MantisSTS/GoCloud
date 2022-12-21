@@ -6,26 +6,26 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"sync"
 	"time"
-
-	"github.com/projectdiscovery/mapcidr"
 )
 
 type DNSLookup struct {
 	DomainName string
 	Nameserver string
-	IPAddr     []string
+	IPAddrs    []string
 }
 
 type ProgArgs struct {
-	DomainFile string
-	NSFile     string
-	OutputFile string
+	DomainFile          string
+	NSFile              string
+	OutputFile          string
+	UpdateCloudServices bool
 }
 
 func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
@@ -40,7 +40,7 @@ func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
 	}
 
 	var err error
-	dns.IPAddr, err = r.LookupHost(context.Background(), dns.DomainName)
+	dns.IPAddrs, err = r.LookupHost(context.Background(), dns.DomainName)
 
 	return dns, err
 }
@@ -63,6 +63,41 @@ func (c *CloudServices) IsCloud(ip string) bool {
 		}
 	}
 	return false
+}
+
+func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
+	// Read the Cloud Services IP Ranges
+	localFile := "ip-ranges.json"
+
+	file, err := os.Open(localFile)
+	if err != nil {
+		return CloudServices{}, err
+	}
+	defer file.Close()
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return CloudServices{}, err
+	}
+
+	err = json.Unmarshal(data, &c.CloudServices)
+	if err != nil {
+		return CloudServices{}, err
+	}
+
+	return *c, nil
+}
+
+func (c *CloudServices) IsCloudIP(ip net.IP) (bool, string, error) {
+	for _, service := range c.CloudServices {
+		for _, rangeIP := range service.IPRange {
+			_, ipRange, _ := net.ParseCIDR(rangeIP)
+			if ipRange.Contains(ip) {
+				return true, service.Name, nil
+			}
+		}
+	}
+	return false, "", nil
 }
 
 func (c *CloudServices) UpdateCloudServices() {
@@ -119,28 +154,27 @@ func (c *CloudServices) UpdateCloudServices() {
 				if err != nil {
 					panic(err)
 				}
-
+				var ipv4 []string
 				for _, prefix := range aws.Prefixes {
-					ips, err := mapcidr.IPAddresses(prefix.IPPrefix)
-
-					if err != nil {
-						panic(err)
-					}
-
-					c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ips})
+					ipv4 = append(ipv4, prefix.IPPrefix)
 				}
+				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ipv4})
+
+				var ipv6 []string
+				for _, prefix := range aws.Ipv6Prefixes {
+					ipv6 = append(ipv6, prefix.IPPrefix)
+				}
+				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ipv6})
 
 			case "Cloudflare":
 			case "Cloudflare6":
 				scanner := bufio.NewScanner(res.Body)
 				scanner.Split(bufio.ScanLines)
+				var ips []string
 				for scanner.Scan() {
-					ips, err := mapcidr.IPAddresses(scanner.Text())
-					if err != nil {
-						panic(err)
-					}
-					c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ips})
+					ips = append(ips, scanner.Text())
 				}
+				c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ips})
 			case "Azure":
 
 				type AzureIPRanges struct {
@@ -162,14 +196,7 @@ func (c *CloudServices) UpdateCloudServices() {
 				}
 
 				for _, prefix := range azure.Values {
-					for _, ip := range prefix.Properties.AddressPrefixes {
-						ips, err := mapcidr.IPAddresses(ip)
-
-						if err != nil {
-							panic(err)
-						}
-						c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: ips})
-					}
+					c.CloudServices = append(c.CloudServices, CloudService{Name: name, IPRange: prefix.Properties.AddressPrefixes})
 				}
 			}
 		}(name, url)
@@ -177,21 +204,18 @@ func (c *CloudServices) UpdateCloudServices() {
 	wg.Wait()
 
 	// Write the results to the file in JSON format
-	enc := json.NewEncoder(file)
-	enc.SetIndent("", "  ")
-	err = enc.Encode(c)
+	b, err := json.MarshalIndent(c, "", "	")
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = file.Write(b)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("%+v\n", c.CloudServices)
 
-}
-
-func init() {
-	cloud := CloudServices{}
-	fmt.Println("[+] Fetching latest IP ranges for the cloud services")
-	cloud.UpdateCloudServices()
 }
 
 func main() {
@@ -202,11 +226,17 @@ func main() {
 	flag.StringVar(&args.DomainFile, "df", "", "File containing domains to lookup")
 	flag.StringVar(&args.NSFile, "nf", "nameservers.txt", "File containing nameservers to use for lookup")
 	flag.StringVar(&args.OutputFile, "o", "", "Output File (JSON)")
+	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges")
 	flag.Parse()
 
 	cloud := CloudServices{}
-	cloud.UpdateCloudServices()
-	// resultsChan := make(chan DNSLookup, 100)
+
+	if args.UpdateCloudServices {
+		cloud.UpdateCloudServices()
+	} else {
+		cloud.ReadCloudServices()
+	}
+
 	// Read the nameservers from the file
 	nameserverFile, err := os.Open(args.NSFile)
 	if err != nil {
@@ -240,8 +270,19 @@ func main() {
 			fmt.Println(err)
 		} else {
 			fmt.Printf("%+v\n", res)
-			// isCloud := cloud.UpdateCloudServices(res.IPAddr)
-			cloud.UpdateCloudServices()
+			for _, ip := range res.IPAddrs {
+
+				fmt.Println("Checking IP: " + ip)
+
+				isCloud, service, err := cloud.IsCloudIP(net.ParseIP(ip))
+
+				if err != nil {
+					fmt.Println(err)
+				} else {
+					fmt.Printf("Is Cloud: %v Service: %v IP: %v\n", isCloud, service, res)
+				}
+			}
+
 		}
 	}
 
