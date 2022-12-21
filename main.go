@@ -39,10 +39,18 @@ type ProgArgs struct {
 	Threads             int
 }
 
+type Output struct {
+	Domain  string
+	IPAddr  string
+	Service string
+	IsCloud bool
+}
+
 var (
 	cloud        CloudServices
 	nameservers  []string
 	ipRangesFile = "ip-ranges.json"
+	output       []Output
 )
 
 func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
@@ -293,6 +301,7 @@ func processQueue(queue chan string, wg *sync.WaitGroup) {
 				} else {
 					red.Printf("[-] Is Cloud Service: %t | IP: %s | Domain: %s\n", isCloud, ip, domain)
 				}
+				output = append(output, Output{Domain: domain, IPAddr: ip, Service: service, IsCloud: isCloud})
 			}
 		}
 	}
@@ -365,5 +374,27 @@ func main() {
 
 	close(queueChan)
 
+	// This was less than an ideal solution so I will revisit this later
+
 	wg.Wait()
+
+	// Encode the output to JSON and write to a file
+	if args.OutputFile != "" {
+		b, err := json.MarshalIndent(output, "", "	")
+		if err != nil {
+			panic(err)
+		}
+
+		outputFile, err := os.OpenFile(args.OutputFile, os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = outputFile.Write(b)
+		if err != nil {
+			panic(err)
+		}
+
+		outputFile.Close()
+	}
 }
