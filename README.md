@@ -33,7 +33,7 @@ You can specify a set of nameservers `nameservers.txt` to use which may be usefu
 Run the program with the `-update` flag to download the latest IP ranges. This isn't done every time to save time on each run.
 
 ```
-./GoCloud -update -df domains.txt
+./GoCloud -update 
 ```
 
 **Usage**
