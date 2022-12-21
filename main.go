@@ -39,8 +39,11 @@ type ProgArgs struct {
 	Threads             int
 }
 
-var cloud CloudServices
-var nameservers []string
+var (
+	cloud       CloudServices
+	nameservers []string
+	localFile   = "ip-ranges.json"
+)
 
 func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
 	r := &net.Resolver{
@@ -71,9 +74,6 @@ func (c *CloudServices) IsCloud(ip string) bool {
 }
 
 func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
-
-	// Read the Cloud Services IP Ranges
-	localFile := "ip-ranges.json"
 
 	// Open input file, if it doesn't exist then create it
 	file, err := os.OpenFile(localFile, os.O_RDWR|os.O_CREATE, 0755)
@@ -107,13 +107,18 @@ func (c *CloudServices) IsCloudIP(ip net.IP) (bool, string, error) {
 	return false, "", nil
 }
 
+func (c *CloudServices) CloudServiceFileExists() bool {
+	file, err := os.Open(localFile)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	return true
+}
+
 func (c *CloudServices) UpdateCloudServices() {
-	// Fetch the Cloud Services IP Ranges
-
-	localFile := "ip-ranges.json"
-
 	// create local file for writing
-	file, err := os.Create(localFile)
+	file, err := os.OpenFile(localFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -277,7 +282,7 @@ func main() {
 	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges")
 	flag.Parse()
 
-	if args.UpdateCloudServices {
+	if args.UpdateCloudServices || !cloud.CloudServiceFileExists() {
 		cloud.UpdateCloudServices()
 	}
 
@@ -287,7 +292,7 @@ func main() {
 	queueChan := make(chan string, 100)
 
 	// Read the nameservers from the file
-	nameserverFile, err := os.Open(args.NSFile)
+	nameserverFile, err := os.OpenFile(args.NSFile, os.O_RDONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
