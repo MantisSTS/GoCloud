@@ -173,6 +173,14 @@ func (c *CloudServices) UpdateCloudServices() {
 				c.Services = append(c.Services, CloudService{Name: name, IPRange: ipv6})
 
 			case "Cloudflare":
+				scanner := bufio.NewScanner(res.Body)
+				scanner.Split(bufio.ScanLines)
+				var ips []string
+				for scanner.Scan() {
+					ips = append(ips, scanner.Text())
+				}
+				c.Services = append(c.Services, CloudService{Name: name, IPRange: ips})
+
 			case "Cloudflare6":
 				scanner := bufio.NewScanner(res.Body)
 				scanner.Split(bufio.ScanLines)
