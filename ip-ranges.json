@@ -1,15 +1,525 @@
 {
 	"Services": [
 		{
-			"Name": "Cloudflare6",
+			"Name": "Google",
 			"IPRange": [
-				"2400:cb00::/32",
-				"2606:4700::/32",
-				"2803:f800::/32",
-				"2405:b500::/32",
-				"2405:8100::/32",
-				"2a06:98c0::/29",
-				"2c0f:f248::/32"
+				"8.8.4.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"8.8.8.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"8.34.208.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"8.35.192.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"23.236.48.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"23.251.128.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.0.0.0/15"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.2.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.0.0/23"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.3.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.4.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.8.0/21"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.16.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.32.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.64.0/18"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.3.128.0/17"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.4.0.0/14"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.8.0.0/13"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.16.0.0/12"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.32.0.0/11"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.64.0.0/10"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"34.128.0.0/10"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.184.0.0/13"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.192.0.0/14"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.196.0.0/15"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.198.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.199.0.0/17"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.199.128.0/18"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.200.0.0/13"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.208.0.0/12"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.224.0.0/12"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"35.240.0.0/13"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"64.15.112.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"64.233.160.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"66.22.228.0/23"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"66.102.0.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"66.249.64.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"70.32.128.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"72.14.192.0/18"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"74.114.24.0/21"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"74.125.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"104.154.0.0/15"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"104.196.0.0/14"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"104.237.160.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"107.167.160.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"107.178.192.0/18"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"108.59.80.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"108.170.192.0/18"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"108.177.0.0/17"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"130.211.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"136.112.0.0/12"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"142.250.0.0/15"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"146.148.0.0/17"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"162.216.148.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"162.222.176.0/21"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"172.110.32.0/21"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"172.217.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"172.253.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"173.194.0.0/16"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"173.255.112.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"192.158.28.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"192.178.0.0/15"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"193.186.4.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"199.36.154.0/23"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"199.36.156.0/24"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"199.192.112.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"199.223.232.0/21"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"207.223.160.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"208.65.152.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"208.68.108.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"208.81.188.0/22"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"208.117.224.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"209.85.128.0/17"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"216.58.192.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"216.73.80.0/20"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"216.239.32.0/19"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2001:4860::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2404:6800::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2404:f340::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2600:1900::/28"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2606:73c0::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2607:f8b0::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2620:11a:a000::/40"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2620:120:e000::/40"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2800:3f0::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2a00:1450::/32"
+			]
+		},
+		{
+			"Name": "Google",
+			"IPRange": [
+				"2c0f:fb50::/32"
 			]
 		},
 		{
@@ -30,6 +540,18 @@
 				"104.24.0.0/14",
 				"172.64.0.0/13",
 				"131.0.72.0/22"
+			]
+		},
+		{
+			"Name": "Cloudflare6",
+			"IPRange": [
+				"2400:cb00::/32",
+				"2606:4700::/32",
+				"2803:f800::/32",
+				"2405:b500::/32",
+				"2405:8100::/32",
+				"2a06:98c0::/29",
+				"2c0f:f248::/32"
 			]
 		},
 		{

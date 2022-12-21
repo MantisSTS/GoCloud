@@ -9,3 +9,6 @@ Tmall.com
 Yahoo.com
 Amazon.com
 aws.amazon.com
+github.com
+133.147.117.34.bc.googleusercontent.com
+voucherapi-old.development.budgetair.co.za

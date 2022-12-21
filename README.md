@@ -36,3 +36,8 @@ GoCloud -df domains.txt
 ```
 
 ![image](https://user-images.githubusercontent.com/818959/208897747-1be861b4-e2b0-4949-a1ff-72eea56ea965.png)
+
+
+## Todo
+
+1. Merge all the IP ranges per service instead of having multiple entries. I know why this happens but just need to fix it

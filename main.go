@@ -117,6 +117,8 @@ func (c *CloudServices) CloudServiceFileExists() bool {
 }
 
 func (c *CloudServices) UpdateCloudServices() {
+	fmt.Println("[+] Updating cloud services IP ranges...(Program will exit after updates)")
+
 	// create local file for writing
 	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
@@ -129,6 +131,7 @@ func (c *CloudServices) UpdateCloudServices() {
 	urls["Cloudflare"] = "https://www.cloudflare.com/ips-v4"
 	urls["Cloudflare6"] = "https://www.cloudflare.com/ips-v6"
 	urls["Azure"] = "https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20221212.json"
+	urls["Google"] = "https://www.gstatic.com/ipranges/goog.json"
 
 	var wg sync.WaitGroup
 	// Parse the JSON
@@ -145,6 +148,31 @@ func (c *CloudServices) UpdateCloudServices() {
 			}
 
 			switch name {
+			case "Google":
+				type GoogleIPRanges struct {
+					SyncToken    string `json:"syncToken"`
+					CreationTime string `json:"creationTime"`
+					Prefixes     []struct {
+						IPv4Prefix string `json:"ipv4Prefix,omitempty"`
+						IPv6Prefix string `json:"ipv6Prefix,omitempty"`
+					} `json:"prefixes"`
+				}
+
+				var google GoogleIPRanges
+				err = json.NewDecoder(res.Body).Decode(&google)
+				if err != nil {
+					panic(err)
+				}
+
+				for _, prefix := range google.Prefixes {
+					if prefix.IPv4Prefix != "" {
+						c.Services = append(c.Services, CloudService{Name: name, IPRange: []string{prefix.IPv4Prefix}})
+					}
+					if prefix.IPv6Prefix != "" {
+						c.Services = append(c.Services, CloudService{Name: name, IPRange: []string{prefix.IPv6Prefix}})
+					}
+				}
+
 			case "AWS":
 				type AWSIPRanges struct {
 					SyncToken  string `json:"syncToken"`
@@ -195,8 +223,8 @@ func (c *CloudServices) UpdateCloudServices() {
 					ips = append(ips, scanner.Text())
 				}
 				c.Services = append(c.Services, CloudService{Name: name, IPRange: ips})
-			case "Azure":
 
+			case "Azure":
 				type AzureIPRanges struct {
 					Values []struct {
 						Name       string `json:"name"`
@@ -279,21 +307,22 @@ func main() {
 	flag.StringVar(&args.NSFile, "nf", "nameservers.txt", "File containing nameservers to use for lookup")
 	flag.StringVar(&args.OutputFile, "o", "", "Output File (JSON)")
 	flag.IntVar(&args.Threads, "t", 10, "Number of threads to use")
-	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges")
+	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges - Please run this first and then run the program again without this flag")
 	flag.Parse()
 
-	if args.DomainFile == "" {
+	if args.DomainFile == "" && !args.UpdateCloudServices {
 		fmt.Println("Please specify a domain file")
 		os.Exit(1)
 	}
 
-	if args.NSFile == "" {
+	if args.NSFile == "" && !args.UpdateCloudServices {
 		fmt.Println("Please specify a nameserver file")
 		os.Exit(1)
 	}
 
 	if args.UpdateCloudServices || !cloud.CloudServiceFileExists() {
 		cloud.UpdateCloudServices()
+		os.Exit(0)
 	}
 
 	cloud.ReadCloudServices()
