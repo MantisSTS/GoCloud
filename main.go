@@ -75,7 +75,8 @@ func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
 	// Read the Cloud Services IP Ranges
 	localFile := "ip-ranges.json"
 
-	file, err := os.Open(localFile)
+	// Open input file, if it doesn't exist then create it
+	file, err := os.OpenFile(localFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		panic(err)
 	}
