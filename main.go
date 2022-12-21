@@ -40,9 +40,9 @@ type ProgArgs struct {
 }
 
 var (
-	cloud       CloudServices
-	nameservers []string
-	localFile   = "ip-ranges.json"
+	cloud        CloudServices
+	nameservers  []string
+	ipRangesFile = "ip-ranges.json"
 )
 
 func (dns *DNSLookup) DoLookup() (*DNSLookup, error) {
@@ -76,7 +76,7 @@ func (c *CloudServices) IsCloud(ip string) bool {
 func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
 
 	// Open input file, if it doesn't exist then create it
-	file, err := os.OpenFile(localFile, os.O_RDWR|os.O_CREATE, 0755)
+	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +108,7 @@ func (c *CloudServices) IsCloudIP(ip net.IP) (bool, string, error) {
 }
 
 func (c *CloudServices) CloudServiceFileExists() bool {
-	file, err := os.Open(localFile)
+	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return false
 	}
@@ -118,7 +118,7 @@ func (c *CloudServices) CloudServiceFileExists() bool {
 
 func (c *CloudServices) UpdateCloudServices() {
 	// create local file for writing
-	file, err := os.OpenFile(localFile, os.O_RDWR|os.O_CREATE, 0755)
+	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		panic(err)
 	}
