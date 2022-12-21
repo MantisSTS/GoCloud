@@ -282,6 +282,16 @@ func main() {
 	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges")
 	flag.Parse()
 
+	if args.DomainFile == "" {
+		fmt.Println("Please specify a domain file")
+		os.Exit(1)
+	}
+
+	if args.NSFile == "" {
+		fmt.Println("Please specify a nameserver file")
+		os.Exit(1)
+	}
+
 	if args.UpdateCloudServices || !cloud.CloudServiceFileExists() {
 		cloud.UpdateCloudServices()
 	}

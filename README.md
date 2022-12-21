@@ -5,7 +5,10 @@ If you need to find out whether a domain resolves to a cloud hosted such as AWS,
 ## Install
 
 ```
-go install -v github.com/MantisSTS/GoCloud@latest
+git clone https://github.com/MantisSTS/GoCloud.git
+cd GoCloud
+go build .
+./GoCloud -df domains.txt
 ```
 
 ## Usage
