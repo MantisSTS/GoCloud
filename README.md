@@ -44,6 +44,12 @@ Put all the domains into a file (`domains.txt` for example) and run the program:
 ./GoCloud -df domains.txt 
 ```
 
+You can also pipe the domains into GoCloud:
+
+```
+cat domains.txt | ./GoCloud -t 100
+```
+
 **Output to File**
 
 GoCloud will output the results to a JSON file when using the `-o` flag:
