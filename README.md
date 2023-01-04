@@ -1,6 +1,6 @@
 # GoCloud
 
-If you need to find out whether a domain resolves to a cloud hosted such as AWS, Azure, Cloudflare, etc, then you can put all of the domains into a file and run GoCloud which will let you know whether they resolve to a cloud service.
+If you need to find out whether a domain resolves to a cloud-hosted service such as AWS, Azure, Google Cloud, Cloudflare, etc, then you can put all of the domains into a file and run GoCloud which will let you know whether they resolve to a cloud service.
 
 ## Install
 

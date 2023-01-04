@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -138,7 +139,7 @@ func (c *CloudServices) UpdateCloudServices() {
 	urls["AWS"] = "https://ip-ranges.amazonaws.com/ip-ranges.json"
 	urls["Cloudflare"] = "https://www.cloudflare.com/ips-v4"
 	urls["Cloudflare6"] = "https://www.cloudflare.com/ips-v6"
-	urls["Azure"] = "https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20221212.json"
+	urls["Azure"] = fmt.Sprintf("https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_%s.json", GetMicrosoftDate())
 	urls["Google"] = "https://www.gstatic.com/ipranges/goog.json"
 
 	var wg sync.WaitGroup
@@ -270,6 +271,17 @@ func (c *CloudServices) UpdateCloudServices() {
 		panic(err)
 	}
 
+}
+
+// Get the date of the most recent monday - This is used for the Microsoft IP ranges
+func GetMicrosoftDate() string {
+	t := time.Now()
+	weekday := int(t.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	monday := t.AddDate(0, 0, -weekday+1)
+	return strings.ReplaceAll(monday.Format("2006-01-02"), "-", "")
 }
 
 func processQueue(queue chan string, wg *sync.WaitGroup) {
