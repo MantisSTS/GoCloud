@@ -126,7 +126,7 @@ func (c *CloudServices) CloudServiceFileExists() bool {
 }
 
 func (c *CloudServices) UpdateCloudServices() {
-	fmt.Println("[+] Updating cloud services IP ranges...(Program will exit after updates)")
+	// fmt.Println("[+] Updating cloud services IP ranges...(Program will exit after updates)")
 
 	// create local file for writing
 	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
@@ -151,7 +151,7 @@ func (c *CloudServices) UpdateCloudServices() {
 			defer wg.Done()
 
 			res, err := http.Get(url)
-			fmt.Println("[+] Fetching IP ranges for", name)
+			// fmt.Println("[+] Fetching IP ranges for", name)
 			if err != nil {
 				panic(err)
 			}
@@ -331,21 +331,12 @@ func main() {
 	flag.BoolVar(&args.UpdateCloudServices, "update", false, "Update the cloud service IP ranges - Please run this first and then run the program again without this flag")
 	flag.Parse()
 
-	if args.DomainFile == "" && !args.UpdateCloudServices {
-		fmt.Println("Please specify a domain file")
-		os.Exit(1)
-	}
-
 	if args.NSFile == "" && !args.UpdateCloudServices {
 		fmt.Println("Please specify a nameserver file")
 		os.Exit(1)
 	}
 
-	if args.UpdateCloudServices || !cloud.CloudServiceFileExists() {
-		cloud.UpdateCloudServices()
-		os.Exit(0)
-	}
-
+	cloud.UpdateCloudServices()
 	cloud.ReadCloudServices()
 
 	var wg sync.WaitGroup
@@ -369,19 +360,29 @@ func main() {
 		go processQueue(queueChan, &wg)
 	}
 
-	// Read the domain names from the file
-	domainFile, err := os.Open(args.DomainFile)
-	if err != nil {
-		panic(err)
-	}
+	if args.DomainFile == "" {
+		// read from stdin
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			queueChan <- scanner.Text()
+		}
+	} else {
 
-	dfScanner := bufio.NewScanner(domainFile)
-	dfScanner.Split(bufio.ScanLines)
-	for dfScanner.Scan() {
-		queueChan <- dfScanner.Text()
-	}
+		// Read the domain names from the file
+		domainFile, err := os.Open(args.DomainFile)
+		if err != nil {
+			panic(err)
+		}
 
-	domainFile.Close()
+		dfScanner := bufio.NewScanner(domainFile)
+		dfScanner.Split(bufio.ScanLines)
+		for dfScanner.Scan() {
+			queueChan <- dfScanner.Text()
+		}
+
+		domainFile.Close()
+	}
 
 	close(queueChan)
 
