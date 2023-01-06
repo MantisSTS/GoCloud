@@ -21,6 +21,10 @@ The following Cloud Services are currently supported:
 - Microsoft Azure
 
 
+## Requirements
+
+This tool was written and tested on go version go1.19.4 
+
 ## Usage
 
 **Nameservers**
