@@ -145,6 +145,8 @@ func (c *CloudServices) UpdateCloudServices() {
 	var wg sync.WaitGroup
 	// Parse the JSON
 	for name, url := range urls {
+
+		fmt.Println("[+] Fetching IP ranges for", name)
 		wg.Add(1)
 
 		go func(name string, url string) {
@@ -336,7 +338,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	cloud.UpdateCloudServices()
+	// Check if the ip-ranges.json file exists
+	_, err := os.Stat("ip-ranges.json")
+	if os.IsNotExist(err) {
+		args.UpdateCloudServices = true
+	}
+
+	if args.UpdateCloudServices {
+		cloud.UpdateCloudServices()
+	}
+
 	cloud.ReadCloudServices()
 
 	var wg sync.WaitGroup
