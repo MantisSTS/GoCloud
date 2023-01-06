@@ -346,6 +346,8 @@ func main() {
 
 	if args.UpdateCloudServices {
 		cloud.UpdateCloudServices()
+		fmt.Println("[+] Cloud Services Updated")
+		os.Exit(0)
 	}
 
 	cloud.ReadCloudServices()
