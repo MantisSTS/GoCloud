@@ -69,3 +69,8 @@ GoCloud will output the results to a JSON file when using the `-o` flag:
 ## Todo
 
 1. Merge all the IP ranges per service instead of having multiple entries. I know why this happens but just need to fix it
+
+
+## Special Thanks
+
+@D3T3CH - Reporting bugs to me so I can fix them for everyone
