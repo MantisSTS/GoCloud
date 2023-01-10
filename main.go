@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -87,18 +88,18 @@ func (c *CloudServices) ReadCloudServices() (CloudServices, error) {
 	// Open input file, if it doesn't exist then create it
 	file, err := os.OpenFile(ipRangesFile, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	defer file.Close()
 
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	err = json.Unmarshal(data, c)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	return *c, nil
@@ -153,6 +154,12 @@ func (c *CloudServices) UpdateCloudServices() {
 			defer wg.Done()
 
 			res, err := http.Get(url)
+
+			if res.StatusCode != 200 {
+				fmt.Println("[-] Error fetching IP ranges for", name)
+				return
+			}
+
 			// fmt.Println("[+] Fetching IP ranges for", name)
 			if err != nil {
 				panic(err)
